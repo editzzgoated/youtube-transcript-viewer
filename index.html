@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Transcript Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    #transcript {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Transcript Viewer</h1>
+  <p>Enter YouTube Video ID:</p>
+  <input type="text" id="videoId" placeholder="e.g. dQw4w9WgXcQ" />
+  <button onclick="fetchTranscript()">Get Transcript</button>
+
+  <div id="transcript">Transcript will appear here...</div>
+
+  <script>
+    const API_KEY = 'sd_e04f682f5ef95fdcab7c9e47c41e43d9'; // Your Supadata API key
+
+    async function fetchTranscript() {
+      const videoId = document.getElementById('videoId').value.trim();
+      const transcriptDiv = document.getElementById('transcript');
+      if (!videoId) {
+        transcriptDiv.textContent = 'Please enter a valid video ID.';
+        return;
+      }
+
+      transcriptDiv.textContent = 'Loading transcript...';
+
+      try {
+        const response = await fetch(`https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}`, {
+          headers: {
+            'x-api-key': API_KEY
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+
+        if (!data || !data.transcript || data.transcript.length === 0) {
+          transcriptDiv.textContent = 'No transcript available for this video.';
+          return;
+        }
+
+        // Format transcript text
+        let text = '';
+        data.transcript.forEach(segment => {
+          text += segment.text + '\n';
+        });
+
+        transcriptDiv.textContent = text;
+
+      } catch (error) {
+        transcriptDiv.textContent = 'Failed to fetch transcript: ' + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
